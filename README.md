@@ -53,7 +53,7 @@ cd FolderTreeMD
 dotnet publish src/FolderTreeMD/FolderTreeMD.csproj -p:PublishProfile=PortableSingleFile
 ```
 
-`artifacts/portable/` then contains **exactly one file**: `FolderTreeMD.exe` (~79 MB, self-contained, icon embedded). Copy it anywhere — another PC, a USB stick — and **run it once**. That first run opens the window and registers the right-click entry. Done.
+Download: grab `FolderTreeMD.exe` from [Releases](https://github.com/rasa79/FolderTreeMD/releases) (~79 MB, self-contained, icon embedded). Copy it anywhere — another PC, a USB stick — and **run it once**. That first run opens the window and registers the right-click entry. Done.
 
 > Why a publish profile? Plain `PublishSingleFile` leaves WPF's native libraries next to the exe — eight files instead of one. The profile adds the four switches that make it truly single-file (measured, not guessed).
 
