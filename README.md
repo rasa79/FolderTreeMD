@@ -171,6 +171,6 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ## Author
 
-**YOUR-GITHUB-USERNAME**
+**Radovan Radivojevic**
 
 * GitHub: https://github.com/rasa79
