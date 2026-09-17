@@ -48,7 +48,7 @@ To **build** from source:
 ### Option A — the portable single file (recommended)
 
 ```powershell
-git clone https://github.com/YOUR-GITHUB-USERNAME/FolderTreeMD.git
+git clone https://github.com/rasa79/FolderTreeMD.git
 cd FolderTreeMD
 dotnet publish src/FolderTreeMD/FolderTreeMD.csproj -p:PublishProfile=PortableSingleFile
 ```
