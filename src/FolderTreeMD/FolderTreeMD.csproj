@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 1809 (17763) is the platform version the approved M6 toast package requires: the
+         package's unpackaged-toast API (ToastContentBuilder.Show / ToastNotificationManagerCompat)
+         exists only in its net5.0-windows10.0.17763 asset — the plain net5.0 asset a net8.0-windows
+         project would otherwise select has no Show() at all (asset listing verified against the
+         package). SupportedOSPlatformVersion states the same floor to the platform analyzer.
+         See DECISIONS.md D22. -->
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>FolderTreeMD.ico</ApplicationIcon>
+    <RootNamespace>FolderTreeMD</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FolderTreeMD.Core\FolderTreeMD.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The single dependency approved at M0 (Q1) for §7 toast notifications (LEARN[25]). -->
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+  </ItemGroup>
+
+</Project>

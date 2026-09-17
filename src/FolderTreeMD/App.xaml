@@ -1,0 +1,17 @@
+<Application x:Class="FolderTreeMD.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:FolderTreeMD">
+    <!-- No StartupUri: the window is created in App.OnStartup, because two of the four startup shapes
+         (CLI mode and Explorer's COM server) must not show one, and StartupUri cannot be unset from
+         OnStartup — its setter rejects null (found by the M7 registration check, which crashed the COM
+         server at startup). -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- UI_SPEC.md §1 design tokens and the styles §2–§3.5 need. -->
+                <ResourceDictionary Source="Themes/FluentDark.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

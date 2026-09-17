@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    LEARN[1]: the solution is split into three projects — Core (net8.0, this file), the WPF app
+    (net8.0-windows) and the xUnit test project — instead of one app project or a single project
+    with conditional compilation.
+    Alternatives considered: (a) put the enumeration engine inside the WPF app project; (b) put it
+    in the app project and use InternalsVisibleTo for tests; (c) a separate Core library as done here.
+    Pros of chosen approach: folder enumeration is pure filesystem logic, so keeping it in a
+    net8.0 library with no UseWPF means it stays headless. That makes it unit-testable without a
+    desktop host — xUnit drives it directly from generated temp fixture trees (see
+    tests/FolderTreeMD.Core.Tests) with no STA thread and no UI dispatcher — and it keeps the
+    WPF-only surface (dialogs, clipboard, MSIX/COM in M7) in the app project, where it cannot leak
+    into the engine.
+    Cons of chosen approach: one more project and one project reference to maintain, and the
+    csproj must be actively kept free of desktop references — if someone adds UseWPF here, the
+    "headless" guarantee is silently lost. PROJECT RULE: do not add WPF/Windows-desktop references
+    to this project.
+    See also: LEARN[2]
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- LEARN[5]: the access-denied tests need the deterministic enumeration seam, which is internal
+         so the public §6 API surface stays exactly as specified. -->
+    <InternalsVisibleTo Include="FolderTreeMD.Core.Tests" />
+  </ItemGroup>
+
+</Project>

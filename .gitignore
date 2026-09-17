@@ -1,0 +1,61 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.binlog
+
+# Test output
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Secrets and environment — never commit these
+.env
+.env.*
+*.secrets
+*.secret
+secrets.json
+appsettings.Development.json
+
+# Signing / certificate artifacts
+*.pfx
+*.p12
+*.snk
+*.cer
+*.pvk
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# MSIX packaging output
+AppPackages/
+BundleArtifacts/
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# Packaging output (D25 route: AppxManifest payload, publish folder, .msix)
+artifacts/

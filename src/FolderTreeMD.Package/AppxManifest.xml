@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FolderTreeMD's sparse package (UI_SPEC.md §8, PLAN.md M7, DECISIONS.md D25).
+
+  This manifest is the whole registration: it gives the unpackaged FolderTreeMD.exe a package identity
+  (uap10:AllowExternalContent), publishes the app's own executable as Explorer's out-of-process COM server
+  for the context-menu command (com:ExeServer + com:Class), and associates that CLSID with folders through
+  desktop4:FileExplorerContextMenus — one desktop5:ItemType per surface: a folder icon (`Directory`) and the
+  empty space inside a folder view (`Directory\Background`). Files are not covered (KNOWN_LIMITATIONS.md
+  L17). This package writes no registry keys of its own, and while the app runs with package identity it
+  writes none either: its portable classic-menu self-registration is skipped for a packaged process
+  (`PackageIdentity`, KNOWN_LIMITATIONS.md L31).
+
+  Two values must stay in lockstep with the code:
+    * Identity/@Publisher must equal the Subject of the certificate that signs the package.
+    * com:Class/@Id and desktop5:Verb/@Clsid must equal ExplorerCommandInfo.ClsidString in
+      src/FolderTreeMD/ExplorerCommand.cs.
+  The package is built with MakeAppx.exe (/nv, required because the app's files live outside the package),
+  signed with SignTool and registered with Add-AppxPackage -ExternalLocation; see build-package.ps1 and
+  docs/msix-signing.md.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  IgnorableNamespaces="uap uap10 rescap com desktop4 desktop5">
+
+  <Identity
+    Name="FolderTreeMD.Sparse"
+    Publisher="CN=FolderTreeMD Dev"
+    Version="1.0.0.0"
+    ProcessorArchitecture="neutral" />
+
+  <Properties>
+    <DisplayName>FolderTreeMD</DisplayName>
+    <PublisherDisplayName>FolderTreeMD Dev</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
+  </Properties>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="unvirtualizedResources" />
+  </Capabilities>
+
+  <Applications>
+    <Application
+      Id="FolderTreeMD"
+      Executable="FolderTreeMD.exe"
+      uap10:TrustLevel="mediumIL"
+      uap10:RuntimeBehavior="win32App">
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="FolderTreeMD"
+        Description="Copy a folder's content as a markdown list"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer
+              Executable="FolderTreeMD.exe"
+              Arguments="-Embedded"
+              DisplayName="FolderTreeMD Explorer command">
+              <com:Class
+                Id="E3B2A79E-EF53-4032-8C6D-8B99CA2BE14C"
+                DisplayName="Copy folder content as markdown" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+            <desktop5:ItemType Type="Directory">
+              <desktop5:Verb
+                Id="FolderTreeMDCopyAsMarkdown"
+                Clsid="E3B2A79E-EF53-4032-8C6D-8B99CA2BE14C" />
+            </desktop5:ItemType>
+            <!-- The same verb on the empty space inside a folder, so right-clicking a folder's background
+                 offers it too. On that surface the shell's item array can be empty (there is no selection),
+                 which is why GetState answers Enabled for an empty array and Invoke resolves the viewed
+                 folder separately (ExplorerCommand.cs). -->
+            <desktop5:ItemType Type="Directory\Background">
+              <desktop5:Verb
+                Id="FolderTreeMDCopyAsMarkdown"
+                Clsid="E3B2A79E-EF53-4032-8C6D-8B99CA2BE14C" />
+            </desktop5:ItemType>
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

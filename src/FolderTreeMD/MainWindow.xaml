@@ -1,0 +1,256 @@
+<Window x:Class="FolderTreeMD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FolderTreeMD"
+        Height="688"
+        Width="1060"
+        MinHeight="480"
+        MinWidth="760"
+        ResizeMode="CanResize"
+        Background="{StaticResource WindowBackgroundBrush}"
+        FontFamily="{StaticResource UiFontFamily}"
+        FontSize="13"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        TextOptions.TextFormattingMode="Display">
+    <!-- UI_SPEC §2 window anatomy, top to bottom: title bar (the standard Windows caption, §3.1),
+         picker row, settings column beside the preview area, bottom bar. -->
+    <Grid Margin="16,12,16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ==================== §3.2 picker row ==================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="PathBox"
+                     Grid.Column="0"
+                     Style="{StaticResource PathBoxStyle}"
+                     IsReadOnly="True"
+                     TabIndex="0"
+                     ToolTip="The folder being listed"
+                     VerticalContentAlignment="Center"
+                     Text="No folder selected" />
+
+            <Button x:Name="BrowseButton"
+                    Grid.Column="1"
+                    Style="{StaticResource BaseButtonStyle}"
+                    Content="Browse…"
+                    Margin="8,0,0,0"
+                    TabIndex="1"
+                    ToolTip="Choose the folder to list"
+                    Click="BrowseButton_Click" />
+
+            <Button x:Name="GenerateButton"
+                    Grid.Column="2"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Content="Generate"
+                    Margin="8,0,0,0"
+                    MinWidth="96"
+                    TabIndex="2"
+                    ToolTip="Enumerate the selected folder with the current settings"
+                    Click="GenerateButton_Click" />
+        </Grid>
+
+        <!-- ==================== §2 settings column + §3.4 preview area ==================== -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="288" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,0,8,0">
+
+                    <!-- ======== §3.3 LISTING ======== -->
+                    <TextBlock Text="LISTING" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,0,0,8" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Recursion depth" Style="{StaticResource LabelTextStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBox x:Name="DepthBox"
+                                 Style="{StaticResource DepthBoxStyle}"
+                                 Width="52"
+                                 TextAlignment="Right"
+                                 TabIndex="3"
+                                 ToolTip="-1 = unlimited"
+                                 KeyDown="DepthBox_KeyDown"
+                                 LostFocus="DepthBox_LostFocus" />
+                    </StackPanel>
+                    <TextBlock Text="-1 = unlimited" Style="{StaticResource HintTextStyle}" Margin="0,2,0,10" />
+
+                    <CheckBox x:Name="HiddenToggle"
+                              Style="{StaticResource TogglePillStyle}"
+                              Content="Include hidden files"
+                              TabIndex="4"
+                              ToolTip="No admin rights needed"
+                              Checked="HiddenToggle_Changed"
+                              Unchecked="HiddenToggle_Changed" />
+                    <TextBlock Text="No admin rights needed" Style="{StaticResource HintTextStyle}" Margin="48,0,0,10" />
+
+                    <CheckBox x:Name="SymlinksToggle"
+                              Style="{StaticResource TogglePillStyle}"
+                              Content="Follow symlinks"
+                              TabIndex="5"
+                              ToolTip="Loop-protected"
+                              Checked="SymlinksToggle_Changed"
+                              Unchecked="SymlinksToggle_Changed" />
+                    <TextBlock Text="Loop-protected" Style="{StaticResource HintTextStyle}" Margin="48,0,0,12" />
+
+                    <TextBlock Text="Indent" Style="{StaticResource LabelTextStyle}" Margin="0,0,0,4" />
+                    <RadioButton x:Name="Indent2Radio"
+                                 Style="{StaticResource OptionRadioStyle}"
+                                 Content="2 spaces"
+                                 GroupName="IndentSize"
+                                 TabIndex="6"
+                                 ToolTip="Two spaces per level"
+                                 Checked="IndentRadio_Checked" />
+                    <RadioButton x:Name="Indent4Radio"
+                                 Style="{StaticResource OptionRadioStyle}"
+                                 Content="4 spaces"
+                                 GroupName="IndentSize"
+                                 TabIndex="7"
+                                 ToolTip="Four spaces per level"
+                                 Checked="IndentRadio_Checked" />
+
+                    <!-- ======== §3.3 ANNOTATIONS ======== -->
+                    <TextBlock Text="ANNOTATIONS" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,16,0,8" />
+
+                    <CheckBox x:Name="FileSizesToggle"
+                              Style="{StaticResource TogglePillStyle}"
+                              Content="File sizes"
+                              TabIndex="8"
+                              ToolTip="Appends (size) to file lines"
+                              Checked="FileSizesToggle_Changed"
+                              Unchecked="FileSizesToggle_Changed" />
+
+                    <CheckBox x:Name="FolderSizesToggle"
+                              Style="{StaticResource TogglePillStyle}"
+                              Content="Folder sizes"
+                              TabIndex="9"
+                              ToolTip="Appends a recursive (size) to folder lines"
+                              Checked="FolderSizesToggle_Changed"
+                              Unchecked="FolderSizesToggle_Changed" />
+
+                    <!-- §3.3 warning box. A partial sum (rule 7's tilde) is information, not an error:
+                         this box never reports one, and the status area treats it as ordinary text. -->
+                    <Border x:Name="FolderSizeWarning" Style="{StaticResource WarningBoxStyle}" Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource WarningTextStyle}"
+                                   Text="⚠ Requires summing every file inside each folder — can be slow on very large trees." />
+                    </Border>
+
+                    <CheckBox x:Name="AttributesToggle"
+                              Style="{StaticResource TogglePillStyle}"
+                              Content="Attributes"
+                              Margin="0,4,0,0"
+                              TabIndex="10"
+                              ToolTip="Appends attribute flags such as [HA]"
+                              Checked="AttributesToggle_Changed"
+                              Unchecked="AttributesToggle_Changed" />
+
+                    <!-- ======== §3.3 SYSTEM ======== -->
+                    <TextBlock Text="SYSTEM" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,16,0,8" />
+
+                    <Button x:Name="LongPathsButton"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Content="Enable long paths in Windows"
+                            HorizontalAlignment="Left"
+                            TabIndex="11"
+                            ToolTip="Sets the LongPathsEnabled registry key. One-time administrator prompt."
+                            Click="LongPathsButton_Click" />
+                    <TextBlock x:Name="LongPathsNote"
+                               Style="{StaticResource HintTextStyle}"
+                               Margin="0,4,0,0"
+                               Text="Sets the LongPathsEnabled registry key. One-time administrator prompt." />
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- ======== §3.4 preview header ======== -->
+                <Grid Grid.Row="0" Margin="0,0,0,6">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Markdown" Style="{StaticResource ActiveTabTextStyle}" />
+                        <!-- Visible but disabled, 55% opacity, tooltip "Not in scope" (§3.4). -->
+                        <TextBlock x:Name="RenderedTab"
+                                   Text="Rendered (not in scope)"
+                                   Style="{StaticResource DisabledTabTextStyle}"
+                                   Margin="16,0,0,0"
+                                   ToolTip="Not in scope"
+                                   IsHitTestVisible="True" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="MetaText"
+                               Style="{StaticResource MetaTextStyle}"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Text="0 folders · 0 files · 0 chars" />
+                </Grid>
+
+                <!-- ======== §3.4 editor with §3.4 empty state ======== -->
+                <Grid Grid.Row="1">
+                    <TextBox x:Name="Editor"
+                             Style="{StaticResource EditorTextBoxStyle}"
+                             TabIndex="12"
+                             ToolTip="The generated markdown; edits are kept until the next Generate"
+                             TextChanged="Editor_TextChanged" />
+
+                    <TextBlock x:Name="EditorPlaceholder"
+                               Text="Select a folder and press Generate."
+                               Style="{StaticResource HintTextStyle}"
+                               Margin="12,10,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Top"
+                               IsHitTestVisible="False" />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- ==================== §3.5 bottom bar ==================== -->
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="SaveButton"
+                    Grid.Column="0"
+                    Style="{StaticResource BaseButtonStyle}"
+                    Content="Save as .md"
+                    TabIndex="13"
+                    ToolTip="Save the listing as a markdown file (UTF-8, no BOM)"
+                    Click="SaveButton_Click" />
+
+            <Button x:Name="CopyButton"
+                    Grid.Column="1"
+                    Style="{StaticResource BaseButtonStyle}"
+                    Content="Copy to clipboard"
+                    Margin="8,0,0,0"
+                    TabIndex="14"
+                    ToolTip="Copy the text in the editor"
+                    Click="CopyButton_Click" />
+
+            <!-- Status: coloured dot + text (§3.5). -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{StaticResource SuccessDotBrush}" VerticalAlignment="Center" />
+                <TextBlock x:Name="StatusText"
+                           Style="{StaticResource HintTextStyle}"
+                           Margin="6,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="Ready — settings saved automatically" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
